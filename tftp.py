@@ -59,6 +59,10 @@ def parse_packet(msg):
         if len(l) != 3:
             return None
         return opcode, l[1], l[2]
+    elif opcode == OPCODE_DATA:
+        l = msg[4:].split('\0')
+        nr = struct.unpack("!H", msg[2:4])[0]
+        return opcode,nr, l[0]
     elif opcode == OPCODE_WRQ:
         # TDOO
         return opcode, # something here
@@ -77,22 +81,30 @@ def tftp_transfer(fd, hostname, direction):
     
     # Put or get the file, block by block, in a loop.
    # sock.connect((hostname, TFTP_PORT))
-    sock.sendto(make_packet_rrq("test.txt", MODE_OCTET),(hostname, TFTP_PORT))
+    sock.sendto(make_packet_rrq("big.txt", MODE_OCTET),(hostname, TFTP_PORT))
     print "connected"
-    (chunk, (raddress, rport)) = sock.recvfrom(65536)
-    print "block"
+    
+    blockNr = 1
     while True:
-        chunk = sock.recv(BLOCK_SIZE)
-        print "block"
-        if len(chunk) < BLOCK_SIZE:
-            break 
-        message = parse_packet(chunk)
-        print message[2]
+        (chunk, (raddress, rport)) = sock.recvfrom(65536)
+
+        
+        parsed = parse_packet(chunk)
+        print parsed
+        print blockNr
+        if parsed[0] == OPCODE_DATA and blockNr == parsed[1]:
+            print "writing data to file"
+            blockNr = blockNr + 1
+            fd.write(parsed[2])
+            if (len(parsed[2]) < BLOCK_SIZE):
+                print "last block"
+                break
+        
+        
 
         # Wait for packet, write the data to the filedescriptor or
         # read the next block from the file. Send new packet to server.
-        # Don't forget to deal with timeouts and received error packets.
-        pass
+        # Don't forget to deal with timeouts and received error packets
 
 
 def usage():
