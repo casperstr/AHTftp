@@ -112,7 +112,9 @@ def upload(fd,hostname):
             print parsed[1]+1
 
             data = fd.read(BLOCK_SIZE-1)
-            print data
+            if len(data) == 0:
+                print "done"
+                break
             block_nr = block_nr + 1
             sock.sendto(make_packet_data(block_nr,data), (hostname, tid))
             
