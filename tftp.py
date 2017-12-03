@@ -52,7 +52,7 @@ def make_packet_wrq(filename, mode):
 
 
 def make_packet_data(blocknr, data):
-    return struct.pack("!HH", OPCODE_DATA, blocknr) + data + '\0'  # TODO
+    return struct.pack("!HH", OPCODE_DATA, blocknr) + data
 
 
 def make_packet_ack(blocknr):
@@ -93,12 +93,20 @@ def parse_packet(msg):
 
 def upload(fd, hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(make_packet_wrq(fd.name, MODE_OCTET), (hostname, TFTP_PORT))
+    sock.settimeout(TFTP_TIMEOUT)
+    lastPacket = make_packet_wrq(fd.name, MODE_OCTET)
+    sock.sendto(lastPacket, (hostname, TFTP_PORT))
     print "connected"
     block_nr = 0
     tid = TFTP_PORT
     while True:
-        (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
+        try:
+            (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
+        except socket.timeout:
+            print "TIMEOUT resending"  # Dont resend
+            sock.sendto(lastPacket, (hostname, TFTP_PORT))
+            continue
+
         if block_nr == 0:
             tid = rport
 
@@ -137,7 +145,7 @@ def download(fd, hostname):
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
             print "RECIVE"
         except socket.timeout:
-            print "TIMEOUT retrying "  # Dont resend
+            print "TIMEOUT "  # Dont resend
             continue
                 # initial
         if block_nr == 1:
