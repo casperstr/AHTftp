@@ -120,7 +120,8 @@ def upload(fd, hostname):
             if len(data) == 0:
                 break
             block_nr = block_nr + 1
-            sock.sendto(make_packet_data(block_nr, data), (hostname, tid))
+            lastPacket = make_packet_data(block_nr, data),
+            sock.sendto(lastPacket, (hostname, tid))
 
         else:
             break
