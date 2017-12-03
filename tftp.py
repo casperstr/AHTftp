@@ -139,7 +139,8 @@ def download(fd, hostname):
     block_nr = 1
     tid = TFTP_PORT
     t = time.time()
-    sock.sendto(make_packet_rrq(fd.name, MODE_OCTET), (hostname, TFTP_PORT))
+    lastPacket = make_packet_rrq(fd.name, MODE_OCTET)
+    sock.sendto(lastPacket, (hostname, TFTP_PORT))
 
     while True:
         try:
@@ -147,6 +148,7 @@ def download(fd, hostname):
             print "RECIVE"
         except socket.timeout:
             print "TIMEOUT "  # Dont resend
+            sock.sendto(lastPacket, (hostname, tid))
             continue
                 # initial
         if block_nr == 1:
@@ -157,7 +159,8 @@ def download(fd, hostname):
         else:
             parsed = parse_packet(chunk)
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
-                sock.sendto(make_packet_ack(block_nr), (hostname, tid))
+                lastPacket = make_packet_ack(block_nr)
+                sock.sendto(lastPacket, (hostname, tid))
                 print (block_nr * BLOCK_SIZE * 0.001 / (time.time() - t))
                 block_nr = block_nr + 1
                 fd.write(parsed[2])
