@@ -87,27 +87,19 @@ def parse_packet(msg):
     # TODO
     return None
 
-
-def tftp_transfer(fd, hostname, direction):
-    # Implement this function
-
-    # Open socket interface
-
-    # Check if we are putting a file or getting a file and send
-    #  the corresponding request.
-
+def upload(fd,hostname):
+    pass
+    
+def download(fd,hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
     # Put or get the file, block by block, in a loop.
    # sock.connect((hostname, TFTP_PORT))
-    sock.sendto(make_packet_rrq("big.txt", MODE_OCTET), (hostname, TFTP_PORT))
+    sock.sendto(make_packet_rrq(fd.name, MODE_OCTET), (hostname, TFTP_PORT))
     print "connected"
-
     block_nr = 1
     tid = TFTP_PORT
     while True:
         (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
-        
         #initial 
         if block_nr == 1:
             tid = rport
@@ -116,8 +108,6 @@ def tftp_transfer(fd, hostname, direction):
             print "Did not expect data from that tid. Ignoring."
         else:
             parsed = parse_packet(chunk)
-            print parsed
-            print block_nr
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
                 print "writing data to file"
                 sock.sendto(make_packet_ack(block_nr), (hostname, tid))
@@ -126,6 +116,19 @@ def tftp_transfer(fd, hostname, direction):
                 if (len(parsed[2]) < BLOCK_SIZE):
                     print "last block"
                     break
+
+def tftp_transfer(fd, hostname, direction):
+    # Implement this function
+    if direction == TFTP_GET:
+        download(fd,hostname)
+    elif direction == TFTP_PUT:
+        upload(fd,hostname)
+    # Open socket interface
+
+    # Check if we are putting a file or getting a file and send
+    #  the corresponding request.
+
+    
 
         # Wait for packet, write the data to the filedescriptor or
         # read the next block from the file. Send new packet to server.
