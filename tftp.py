@@ -138,7 +138,7 @@ def download(fd, hostname):
             print "RECIVE"
         except socket.timeout:
             print "TIMEOUT retrying "  # Dont resend
-            continue:
+            continue
                 # initial
         if block_nr == 1:
             tid = rport
