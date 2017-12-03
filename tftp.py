@@ -94,17 +94,16 @@ def tftp_transfer(fd, hostname, direction):
     sock.sendto(make_packet_rrq("big.txt", MODE_OCTET),(hostname, TFTP_PORT))
     print "connected"
     
-    blockNr = 1
+    block_nr = 1
     while True:
         (chunk, (raddress, rport)) = sock.recvfrom(65536)
-
-        
+     
         parsed = parse_packet(chunk)
         print parsed
-        print blockNr
-        if parsed[0] == OPCODE_DATA and blockNr == parsed[1]:
+        print block_nr
+        if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
             print "writing data to file"
-            blockNr = blockNr + 1
+            block_nr = block_nr + 1
             fd.write(parsed[2])
             if (len(parsed[2]) < BLOCK_SIZE):
                 print "last block"
