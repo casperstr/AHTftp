@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import sys,socket,struct,select
+import sys,socket,struct,select, time
 
 BLOCK_SIZE= 512
 
@@ -14,7 +14,7 @@ MODE_NETASCII= "netascii"
 MODE_OCTET=    "octet"
 MODE_MAIL=     "mail"
 
-TFTP_PORT= 6969
+TFTP_PORT= 69
 
 # Timeout in seconds
 TFTP_TIMEOUT= 2
@@ -76,9 +76,11 @@ def tftp_transfer(fd, hostname, direction):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
     # Put or get the file, block by block, in a loop.
-    sock.connect((hostname,TFTP_PORT))
-    sock.send(make_packet_rrq("small.txt",MODE_OCTET))
+   # sock.connect((hostname, TFTP_PORT))
+    sock.sendto(make_packet_rrq("test.txt", MODE_OCTET),(hostname, TFTP_PORT))
     print "connected"
+    (chunk, (raddress, rport)) = sock.recvfrom(65536)
+    print "block"
     while True:
         chunk = sock.recv(BLOCK_SIZE)
         print "block"
