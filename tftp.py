@@ -97,7 +97,8 @@ def upload(fd,hostname):
     tid = TFTP_PORT
     while True:
         (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
-
+        if block_nr == 0:
+            tid = rport
         
         parsed = parse_packet(chunk)
         print parsed
@@ -113,7 +114,7 @@ def upload(fd,hostname):
             data = fd.read(BLOCK_SIZE-1)
             print data
             block_nr = block_nr + 1
-            sock.sendto(make_packet_data(block_nr,data), (hostname, TFTP_PORT))
+            sock.sendto(make_packet_data(block_nr,data), (hostname, tid))
             
         else:
             print parsed
