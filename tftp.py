@@ -58,8 +58,10 @@ def make_packet_data(blocknr, data):
 def make_packet_ack(blocknr):
     return struct.pack("!H", OPCODE_ACK) + struct.pack("!H", blocknr)
 
+
 def make_packet_err(errcode, errmsg):
-    return struct.pack("!HH", OPCODE_ERR, errcode) + errmsg + '\0' # TODO
+    return struct.pack("!HH", OPCODE_ERR, errcode) + errmsg + '\0'  # TODO
+
 
 def parse_packet(msg):
     """This function parses a recieved packet and returns a tuple where the
@@ -73,52 +75,52 @@ def parse_packet(msg):
         return opcode, l[1], l[2]
     elif opcode == OPCODE_DATA:
         nr = struct.unpack("!H", msg[2:4])[0]
-        return opcode,nr, msg[4:]
-    elif opcode == OPCODE_ERR: 
+        return opcode, nr, msg[4:]
+    elif opcode == OPCODE_ERR:
         l = msg[4:].split('\0')
         errorCode = struct.unpack("!H", msg[2:4])[0]
         return opcode, errorCode, l[0]
     elif opcode == OPCODE_ACK:
         return opcode, struct.unpack("!H", msg[2:4])[0]
-    #elif opcode == OPCODE_WRQ:
+    # elif opcode == OPCODE_WRQ:
     #    l = msg[2:].split('\0')
     #    if (len) != 3:
-    #        return None 
+    #        return None
     #    return opcode, l[1], l[2]
     # TODO
     return None
 
-def upload(fd,hostname):
+
+def upload(fd, hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(make_packet_wrq(fd.name,MODE_OCTET), (hostname, TFTP_PORT))
+    sock.sendto(make_packet_wrq(fd.name, MODE_OCTET), (hostname, TFTP_PORT))
     print "connected"
     block_nr = 0
     tid = TFTP_PORT
     while True:
-        (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
+        (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
         if block_nr == 0:
             tid = rport
-        
+
         parsed = parse_packet(chunk)
         print parsed
-        print parsed[0] == OPCODE_ACK 
+        print parsed[0] == OPCODE_ACK
         print parsed[1]
         print block_nr
         if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
-            data = fd.read(BLOCK_SIZE-1)
+            data = fd.read(BLOCK_SIZE - 1)
             if len(data) == 0:
                 break
             block_nr = block_nr + 1
-            sock.sendto(make_packet_data(block_nr,data), (hostname, tid))
-            
+            sock.sendto(make_packet_data(block_nr, data), (hostname, tid))
+
         else:
             break
 
-
-
     pass
 
-def download(fd,hostname):
+
+def download(fd, hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Put or get the file, block by block, in a loop.
    # sock.connect((hostname, TFTP_PORT))
@@ -128,8 +130,12 @@ def download(fd,hostname):
     tid = TFTP_PORT
     t = time.time()
     while True:
-        (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
-        #initial 
+        sock.settimeout(TFTP_TIMEOUT)
+        try:
+            (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
+        except socket.timeout:
+            print "TIMEOUT"
+        # initial
         if block_nr == 1:
             tid = rport
 
@@ -139,7 +145,7 @@ def download(fd,hostname):
             parsed = parse_packet(chunk)
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
                 sock.sendto(make_packet_ack(block_nr), (hostname, tid))
-                print (block_nr*BLOCK_SIZE*0.001/(time.time()-t))
+                print (block_nr * BLOCK_SIZE * 0.001 / (time.time() - t))
                 block_nr = block_nr + 1
                 fd.write(parsed[2])
                 if (len(parsed[2]) < BLOCK_SIZE):
@@ -147,7 +153,8 @@ def download(fd,hostname):
                     break
             elif parsed[0] == OPCODE_ERR:
                 print "Error: " + ERROR_CODES[parsed[1]]
-                break; 
+                break
+
 
 def tftp_transfer(fd, hostname, direction):
     # Implement this function
@@ -159,8 +166,6 @@ def tftp_transfer(fd, hostname, direction):
 
     # Check if we are putting a file or getting a file and send
     #  the corresponding request.
-
-    
 
         # Wait for packet, write the data to the filedescriptor or
         # read the next block from the file. Send new packet to server.
