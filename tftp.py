@@ -138,8 +138,9 @@ def download(fd, hostname):
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
         except socket.timeout:
             print "TIMEOUT retrying"
-            sock.sendto(lastPacket, (hostname, tid))
+            sock.sendto(lp, (hostname, tid))
             continue
+        lp = chunk
         # initial
         if block_nr == 1:
             tid = rport
