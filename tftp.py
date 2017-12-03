@@ -111,7 +111,7 @@ def upload(fd, hostname):
             tid = rport
 
         parsed = parse_packet(chunk)
-        #print parsed
+        print parsed
         #print parsed[0] == OPCODE_ACK
         #print parsed[1]
         #print block_nr
