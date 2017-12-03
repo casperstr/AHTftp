@@ -82,12 +82,6 @@ def parse_packet(msg):
         return opcode, errorCode, l[0]
     elif opcode == OPCODE_ACK:
         return opcode, struct.unpack("!H", msg[2:4])[0]
-    # elif opcode == OPCODE_WRQ:
-    #    l = msg[2:].split('\0')
-    #    if (len) != 3:
-    #        return None
-    #    return opcode, l[1], l[2]
-    # TODO
     return None
 
 
@@ -103,7 +97,7 @@ def upload(fd, hostname):
         try:
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
         except socket.timeout:
-            print "TIMEOUT resending"  # Dont resend
+            print "TIMEOUT resending"
             sock.sendto(lastPacket, (hostname, tid))
             continue
 
@@ -111,10 +105,6 @@ def upload(fd, hostname):
             tid = rport
 
         parsed = parse_packet(chunk)
-        print parsed
-        print parsed[0] == OPCODE_ACK
-        print parsed[1]
-        print block_nr
         if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
             data = fd.read(BLOCK_SIZE)
             if len(data) == 0:
@@ -133,8 +123,6 @@ def upload(fd, hostname):
 def download(fd, hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(TFTP_TIMEOUT)
-    # Put or get the file, block by block, in a loop.
-   # sock.connect((hostname, TFTP_PORT))
 
     print "connected"
     block_nr = 1
@@ -146,12 +134,10 @@ def download(fd, hostname):
     while True:
         try:
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
-            print "RECIVE"
         except socket.timeout:
-            print "TIMEOUT "  # Dont resend
+            print "TIMEOUT resending"  
             sock.sendto(lastPacket, (hostname, tid))
             continue
-                # initial
         if block_nr == 1:
             tid = rport
 
