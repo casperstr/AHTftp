@@ -14,7 +14,7 @@ MODE_NETASCII= "netascii"
 MODE_OCTET=    "octet"
 MODE_MAIL=     "mail"
 
-TFTP_PORT= 69
+TFTP_PORT= 6969
 
 # Timeout in seconds
 TFTP_TIMEOUT= 2
@@ -80,7 +80,7 @@ def tftp_transfer(fd, hostname, direction):
     sock.send(make_packet_rrq("small.txt",MODE_OCTET))
     print "connected"
     while True:
-        chunk = sock.recv(36)
+        chunk = sock.recv(BLOCK_SIZE)
         print "block"
         if len(chunk) < BLOCK_SIZE:
             break 
