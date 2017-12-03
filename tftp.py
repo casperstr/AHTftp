@@ -72,9 +72,8 @@ def parse_packet(msg):
             return None
         return opcode, l[1], l[2]
     elif opcode == OPCODE_DATA:
-        l = msg[4:].split('\0')
         nr = struct.unpack("!H", msg[2:4])[0]
-        return opcode,nr, l[0]
+        return opcode,nr, msg[4:]
     elif opcode == OPCODE_ERR: 
         l = msg[4:].split('\0')
         errorCode = struct.unpack("!H", msg[2:4])[0]
@@ -147,8 +146,10 @@ def download(fd,hostname):
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
                 print "writing data to file"
                 sock.sendto(make_packet_ack(block_nr), (hostname, tid))
+                print block_nr
                 block_nr = block_nr + 1
                 fd.write(parsed[2])
+                print len(parsed[2])
                 if (len(parsed[2]) < BLOCK_SIZE):
                     print "last block"
                     break
