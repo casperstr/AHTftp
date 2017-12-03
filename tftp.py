@@ -105,20 +105,13 @@ def upload(fd,hostname):
         print parsed[1]
         print block_nr
         if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
-            print "recived ack for "
-            print parsed[1] 
-            print ", sending " 
-            print parsed[1]+1
-
             data = fd.read(BLOCK_SIZE-1)
             if len(data) == 0:
-                print "done"
                 break
             block_nr = block_nr + 1
             sock.sendto(make_packet_data(block_nr,data), (hostname, tid))
             
         else:
-            print parsed
             break
 
 
@@ -133,6 +126,7 @@ def download(fd,hostname):
     print "connected"
     block_nr = 1
     tid = TFTP_PORT
+    t = time.time()
     while True:
         (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
         #initial 
@@ -144,15 +138,16 @@ def download(fd,hostname):
         else:
             parsed = parse_packet(chunk)
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
-                print "writing data to file"
                 sock.sendto(make_packet_ack(block_nr), (hostname, tid))
-                print block_nr
+                print (block_nr*BLOCK_SIZE*0.001/(time.time()-t))
                 block_nr = block_nr + 1
                 fd.write(parsed[2])
-                print len(parsed[2])
                 if (len(parsed[2]) < BLOCK_SIZE):
                     print "last block"
                     break
+            elif parsed[0] == OPCODE_ERR:
+                print "Error: " + parsed[2]
+                break; 
 
 def tftp_transfer(fd, hostname, direction):
     # Implement this function
