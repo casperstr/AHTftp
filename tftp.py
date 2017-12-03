@@ -122,9 +122,10 @@ def upload(fd, hostname):
 
 def download(fd, hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(TFTP_TIMEOUT)
     # Put or get the file, block by block, in a loop.
    # sock.connect((hostname, TFTP_PORT))
-    
+
     print "connected"
     block_nr = 1
     tid = TFTP_PORT
@@ -133,14 +134,13 @@ def download(fd, hostname):
     sock.sendto(lastPacket, (hostname, TFTP_PORT))
 
     while True:
-        sock.settimeout(TFTP_TIMEOUT)
         try:
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
+            print "RECIVE"
         except socket.timeout:
             print "TIMEOUT retrying"
-            sock.sendto(lp, (hostname, tid))
+            sock.sendto(lastPacket, (hostname, tid))
             continue
-        lp = chunk
         # initial
         if block_nr == 1:
             tid = rport
