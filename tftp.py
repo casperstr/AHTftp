@@ -42,18 +42,16 @@ def make_packet_rrq(filename, mode):
 
 def make_packet_wrq(filename, mode):
     # Write onto foreign file system
-
-    return "" # TODO
+    return struct.pack("!H", OPCODE_WRQ) + filename + '\0' + mode + '\0' # TODO
 
 def make_packet_data(blocknr, data):
-    return "" # TODO
+    return struct.pack("!H", OPCODE_DATA, blocknr, data) # TODO
 
 def make_packet_ack(blocknr):
-    return "" # TODO
+    return struct.pack("!H", OPCODE_ACK, blocknr)
 
 def make_packet_err(errcode, errmsg):
-    
-    return "" # TODO
+    return struct.pack("!H", OPCODE_ERR, errcode) + errmsg + '\0' # TODO
 
 def parse_packet(msg):
     """This function parses a recieved packet and returns a tuple where the
