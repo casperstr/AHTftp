@@ -18,7 +18,7 @@ MODE_NETASCII = "netascii"
 MODE_OCTET = "octet"
 MODE_MAIL = "mail"
 
-TFTP_PORT = 10069
+TFTP_PORT = 69
 
 # Timeout in seconds
 TFTP_TIMEOUT = 2
@@ -112,12 +112,13 @@ def upload(fd, hostname):
 
         parsed = parse_packet(chunk)
         print parsed
-        #print parsed[0] == OPCODE_ACK
-        #print parsed[1]
-        #print block_nr
+        print parsed[0] == OPCODE_ACK
+        print parsed[1]
+        print block_nr
         if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
             data = fd.read(BLOCK_SIZE - 1)
             if len(data) == 0:
+                print "last packet"
                 break
             block_nr = block_nr + 1
             lastPacket = make_packet_data(block_nr, data)
@@ -139,7 +140,8 @@ def download(fd, hostname):
     block_nr = 1
     tid = TFTP_PORT
     t = time.time()
-    sock.sendto(make_packet_rrq(fd.name, MODE_OCTET), (hostname, TFTP_PORT))
+    lastPacket = make_packet_rrq(fd.name, MODE_OCTET)
+    sock.sendto(lastPacket, (hostname, TFTP_PORT))
 
     while True:
         try:
@@ -147,6 +149,7 @@ def download(fd, hostname):
             print "RECIVE"
         except socket.timeout:
             print "TIMEOUT "  # Dont resend
+            sock.sendto(lastPacket, (hostname, tid))
             continue
                 # initial
         if block_nr == 1:
@@ -157,7 +160,8 @@ def download(fd, hostname):
         else:
             parsed = parse_packet(chunk)
             if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
-                sock.sendto(make_packet_ack(block_nr), (hostname, tid))
+                lastPacket = make_packet_ack(block_nr)
+                sock.sendto(lastPacket, (hostname, tid))
                 print (block_nr * BLOCK_SIZE * 0.001 / (time.time() - t))
                 block_nr = block_nr + 1
                 fd.write(parsed[2])
