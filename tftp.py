@@ -114,10 +114,11 @@ def upload(fd, hostname):
             lastPacket = make_packet_data(block_nr, data)
             sock.sendto(lastPacket, (hostname, tid))
 
+        elif parsed[0] == OPCODE_ERR:
+            print "Error: " + ERROR_CODES[parsed[1]]
+            break
         else:
             break
-
-    pass
 
 
 def download(fd, hostname):
