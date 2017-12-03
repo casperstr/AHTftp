@@ -72,9 +72,21 @@ def tftp_transfer(fd, hostname, direction):
     
     # Check if we are putting a file or getting a file and send
     #  the corresponding request.
+  
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
     # Put or get the file, block by block, in a loop.
+    sock.connect((hostname,TFTP_PORT))
+    sock.send(make_packet_rrq("small.txt",MODE_OCTET))
+    print "connected"
     while True:
+        chunk = sock.recv(36)
+        print "block"
+        if len(chunk) < BLOCK_SIZE:
+            break 
+        message = parse_packet(chunk)
+        print message[2]
+
         # Wait for packet, write the data to the filedescriptor or
         # read the next block from the file. Send new packet to server.
         # Don't forget to deal with timeouts and received error packets.
