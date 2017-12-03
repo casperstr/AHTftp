@@ -1,0 +1,35 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BLOCK_SIZE	../tftp.py	/^BLOCK_SIZE= 512$/;"	kind:variable	line:5
+ERROR_CODES	../tftp.py	/^ERROR_CODES = ["Undef",$/;"	kind:variable	line:22
+MODE_MAIL	../tftp.py	/^MODE_MAIL=     "mail"$/;"	kind:variable	line:15
+MODE_NETASCII	../tftp.py	/^MODE_NETASCII= "netascii"$/;"	kind:variable	line:13
+MODE_OCTET	../tftp.py	/^MODE_OCTET=    "octet"$/;"	kind:variable	line:14
+OPCODE_ACK	../tftp.py	/^OPCODE_ACK=   4$/;"	kind:variable	line:10
+OPCODE_DATA	../tftp.py	/^OPCODE_DATA=  3$/;"	kind:variable	line:9
+OPCODE_ERR	../tftp.py	/^OPCODE_ERR=   5$/;"	kind:variable	line:11
+OPCODE_RRQ	../tftp.py	/^OPCODE_RRQ=   1$/;"	kind:variable	line:7
+OPCODE_WRQ	../tftp.py	/^OPCODE_WRQ=   2$/;"	kind:variable	line:8
+TFTP_GET	../tftp.py	/^TFTP_GET = 1$/;"	kind:variable	line:32
+TFTP_PORT	../tftp.py	/^TFTP_PORT= 69$/;"	kind:variable	line:17
+TFTP_PUT	../tftp.py	/^TFTP_PUT = 2$/;"	kind:variable	line:33
+TFTP_TIMEOUT	../tftp.py	/^TFTP_TIMEOUT= 2$/;"	kind:variable	line:20
+main	../tftp.py	/^def main():$/;"	kind:function	line:104
+make_packet_ack	../tftp.py	/^def make_packet_ack(blocknr):$/;"	kind:function	line:46
+make_packet_data	../tftp.py	/^def make_packet_data(blocknr, data):$/;"	kind:function	line:43
+make_packet_err	../tftp.py	/^def make_packet_err(errcode, errmsg):$/;"	kind:function	line:49
+make_packet_rrq	../tftp.py	/^def make_packet_rrq(filename, mode):$/;"	kind:function	line:36
+make_packet_wrq	../tftp.py	/^def make_packet_wrq(filename, mode):$/;"	kind:function	line:40
+parse_packet	../tftp.py	/^def parse_packet(msg):$/;"	kind:function	line:52
+select	../tftp.py	/^import sys,socket,struct,select, time$/;"	kind:namespace	line:3
+socket	../tftp.py	/^import sys,socket,struct,select, time$/;"	kind:namespace	line:3
+struct	../tftp.py	/^import sys,socket,struct,select, time$/;"	kind:namespace	line:3
+sys	../tftp.py	/^import sys,socket,struct,select, time$/;"	kind:namespace	line:3
+tftp.py	../tftp.py	1;"	kind:file	line:1
+tftp_transfer	../tftp.py	/^def tftp_transfer(fd, hostname, direction):$/;"	kind:function	line:68
+time	../tftp.py	/^import sys,socket,struct,select, time$/;"	kind:namespace	line:3
+usage	../tftp.py	/^def usage():$/;"	kind:function	line:98
