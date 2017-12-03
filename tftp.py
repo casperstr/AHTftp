@@ -1,23 +1,27 @@
 #! /usr/bin/python
 
-import sys,socket,struct,select, time
+import sys
+import socket
+import struct
+import select
+import time
 
-BLOCK_SIZE= 512
+BLOCK_SIZE = 512
 
-OPCODE_RRQ=   1
-OPCODE_WRQ=   2
-OPCODE_DATA=  3
-OPCODE_ACK=   4
-OPCODE_ERR=   5
+OPCODE_RRQ = 1
+OPCODE_WRQ = 2
+OPCODE_DATA = 3
+OPCODE_ACK = 4
+OPCODE_ERR = 5
 
-MODE_NETASCII= "netascii"
-MODE_OCTET=    "octet"
-MODE_MAIL=     "mail"
+MODE_NETASCII = "netascii"
+MODE_OCTET = "octet"
+MODE_MAIL = "mail"
 
-TFTP_PORT= 69
+TFTP_PORT = 69
 
 # Timeout in seconds
-TFTP_TIMEOUT= 2
+TFTP_TIMEOUT = 2
 
 ERROR_CODES = ["Undef",
                "File not found",
@@ -40,18 +44,24 @@ def make_packet_rrq(filename, mode):
     # H = unsigned short.
     return struct.pack("!H", OPCODE_RRQ) + filename + '\0' + mode + '\0'
 
+
 def make_packet_wrq(filename, mode):
     # Write onto foreign file system
-    return struct.pack("!H", OPCODE_WRQ) + filename + '\0' + mode + '\0' # TODO
+    # TODO
+    return struct.pack("!H", OPCODE_WRQ) + filename + '\0' + mode + '\0'
+
 
 def make_packet_data(blocknr, data):
-    return struct.pack("!H", OPCODE_DATA, blocknr, data) # TODO
+    return struct.pack("!H", OPCODE_DATA, blocknr, data)  # TODO
+
 
 def make_packet_ack(blocknr):
-    return struct.pack("!H", OPCODE_ACK, blocknr)
+    return struct.pack("!HH", OPCODE_ACK, blocknr)
+
 
 def make_packet_err(errcode, errmsg):
-    return struct.pack("!H", OPCODE_ERR, errcode) + errmsg + '\0' # TODO
+    return struct.pack("!H", OPCODE_ERR, errcode) + errmsg + '\0'  # TODO
+
 
 def parse_packet(msg):
     """This function parses a recieved packet and returns a tuple where the
@@ -66,44 +76,52 @@ def parse_packet(msg):
     elif opcode == OPCODE_DATA:
         l = msg[4:].split('\0')
         nr = struct.unpack("!H", msg[2:4])[0]
-        return opcode,nr, l[0]
+        return opcode, nr, l[0]
     elif opcode == OPCODE_WRQ:
         # TDOO
-        return opcode, # something here
+        return opcode,  # something here
     # TODO
     return None
 
+
 def tftp_transfer(fd, hostname, direction):
     # Implement this function
-    
+
     # Open socket interface
-    
+
     # Check if we are putting a file or getting a file and send
     #  the corresponding request.
-  
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     # Put or get the file, block by block, in a loop.
    # sock.connect((hostname, TFTP_PORT))
-    sock.sendto(make_packet_rrq("big.txt", MODE_OCTET),(hostname, TFTP_PORT))
+    sock.sendto(make_packet_rrq("big.txt", MODE_OCTET), (hostname, TFTP_PORT))
     print "connected"
-    
+
     block_nr = 1
+    tid = TFTP_PORT
     while True:
-        (chunk, (raddress, rport)) = sock.recvfrom(65536)
-     
-        parsed = parse_packet(chunk)
-        print parsed
-        print block_nr
-        if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
-            print "writing data to file"
-            block_nr = block_nr + 1
-            fd.write(parsed[2])
-            if (len(parsed[2]) < BLOCK_SIZE):
-                print "last block"
-                break
+        (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
         
-        
+        #initial 
+        if block_nr == 1:
+            tid = rport
+
+        if rport != tid:
+            print "Did not expect data from that tid. Ignoring."
+        else:
+            parsed = parse_packet(chunk)
+            print parsed
+            print block_nr
+            if parsed[0] == OPCODE_DATA and block_nr == parsed[1]:
+                print "writing data to file"
+                sock.sendto(make_packet_ack(block_nr), (hostname, tid))
+                block_nr = block_nr + 1
+                fd.write(parsed[2])
+                if (len(parsed[2]) < BLOCK_SIZE):
+                    print "last block"
+                    break
 
         # Wait for packet, write the data to the filedescriptor or
         # read the next block from the file. Send new packet to server.
@@ -152,6 +170,7 @@ def main():
 
     tftp_transfer(fd, hostname, direction)
     fd.close()
+
 
 if __name__ == "__main__":
     main()
