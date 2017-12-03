@@ -146,7 +146,7 @@ def download(fd,hostname):
                     print "last block"
                     break
             elif parsed[0] == OPCODE_ERR:
-                print "Error: " + parsed[2]
+                print "Error: " + ERROR_CODES[parsed[1]]
                 break; 
 
 def tftp_transfer(fd, hostname, direction):
