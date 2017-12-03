@@ -48,17 +48,17 @@ def make_packet_data(blocknr, data):
     return struct.pack("!H", OPCODE_DATA, blocknr, data) # TODO
 
 def make_packet_ack(blocknr):
-    return struct.pack("!H", OPCODE_ACK, blocknr)
+    return struct.pack("!H", OPCODE_ACK) + struct.pack("!H", blocknr)
 
 def make_packet_err(errcode, errmsg):
-    return struct.pack("!H", OPCODE_ERR, errcode) + errmsg + '\0' # TODO
+    return struct.pack("!HH", OPCODE_ERR, errcode) + errmsg + '\0' # TODO
 
 def parse_packet(msg):
     """This function parses a recieved packet and returns a tuple where the
         first value is the opcode as an integer and the following values are
         the other parameters of the packets in python data types"""
     opcode = struct.unpack("!H", msg[:2])[0]
-    if opcode == OPCODE_RRQ:
+    if opcode == OPCODE_RRQ or opcode == OPCODE_WRQ:
         l = msg[2:].split('\0')
         if len(l) != 3:
             return None
@@ -67,9 +67,15 @@ def parse_packet(msg):
         l = msg[4:].split('\0')
         nr = struct.unpack("!H", msg[2:4])[0]
         return opcode,nr, l[0]
-    elif opcode == OPCODE_WRQ:
-        # TDOO
-        return opcode, # something here
+    elif opcode == OPCODE_ERR: 
+        l = msg[4:].split('\0')
+        errorCode = struct.unpack("!H", msg[2:4])[0]
+        return opcode, errorCode, l[0]
+    #elif opcode == OPCODE_WRQ:
+    #    l = msg[2:].split('\0')
+    #    if (len) != 3:
+    #        return None 
+    #    return opcode, l[1], l[2]
     # TODO
     return None
 
