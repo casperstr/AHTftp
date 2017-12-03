@@ -18,7 +18,7 @@ MODE_NETASCII = "netascii"
 MODE_OCTET = "octet"
 MODE_MAIL = "mail"
 
-TFTP_PORT = 13069
+TFTP_PORT = 69
 
 # Timeout in seconds
 TFTP_TIMEOUT = 2
@@ -104,7 +104,7 @@ def upload(fd, hostname):
             (chunk, (raddress, rport)) = sock.recvfrom(128 * BLOCK_SIZE)
         except socket.timeout:
             print "TIMEOUT resending"  # Dont resend
-            sock.sendto(lastPacket, (hostname, TFTP_PORT))
+            sock.sendto(lastPacket, (hostname, tid))
             continue
 
         if block_nr == 0:
@@ -116,7 +116,7 @@ def upload(fd, hostname):
         print parsed[1]
         print block_nr
         if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
-            data = fd.read(BLOCK_SIZE - 1)
+            data = fd.read(BLOCK_SIZE)
             if len(data) == 0:
                 print "last packet"
                 break
