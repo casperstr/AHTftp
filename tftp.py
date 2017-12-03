@@ -52,7 +52,7 @@ def make_packet_wrq(filename, mode):
 
 
 def make_packet_data(blocknr, data):
-    return struct.pack("!H", OPCODE_DATA, blocknr, data)  # TODO
+    return struct.pack("!HH", OPCODE_DATA, blocknr) + data + '\0'  # TODO
 
 
 def make_packet_ack(blocknr):
@@ -79,6 +79,8 @@ def parse_packet(msg):
         l = msg[4:].split('\0')
         errorCode = struct.unpack("!H", msg[2:4])[0]
         return opcode, errorCode, l[0]
+    elif opcode == OPCODE_ACK:
+        return opcode, struct.unpack("!H", msg[2:4])[0]
     #elif opcode == OPCODE_WRQ:
     #    l = msg[2:].split('\0')
     #    if (len) != 3:
@@ -88,8 +90,39 @@ def parse_packet(msg):
     return None
 
 def upload(fd,hostname):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(make_packet_wrq(fd.name,MODE_OCTET), (hostname, TFTP_PORT))
+    print "connected"
+    block_nr = 0
+    tid = TFTP_PORT
+    while True:
+        (chunk, (raddress, rport)) = sock.recvfrom(128*BLOCK_SIZE)
+
+        
+        parsed = parse_packet(chunk)
+        print parsed
+        print parsed[0] == OPCODE_ACK 
+        print parsed[1]
+        print block_nr
+        if parsed[0] == OPCODE_ACK and parsed[1] == block_nr:
+            print "recived ack for "
+            print parsed[1] 
+            print ", sending " 
+            print parsed[1]+1
+
+            data = fd.read(BLOCK_SIZE-1)
+            print data
+            block_nr = block_nr + 1
+            sock.sendto(make_packet_data(block_nr,data), (hostname, TFTP_PORT))
+            
+        else:
+            print parsed
+            break
+
+
+
     pass
-    
+
 def download(fd,hostname):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Put or get the file, block by block, in a loop.
@@ -120,9 +153,9 @@ def download(fd,hostname):
 def tftp_transfer(fd, hostname, direction):
     # Implement this function
     if direction == TFTP_GET:
-        download(fd,hostname)
+        download(fd, hostname)
     elif direction == TFTP_PUT:
-        upload(fd,hostname)
+        upload(fd, hostname)
     # Open socket interface
 
     # Check if we are putting a file or getting a file and send
