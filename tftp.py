@@ -35,9 +35,14 @@ TFTP_PUT = 2
 
 def make_packet_rrq(filename, mode):
     # Note the exclamation mark in the format string to pack(). What is it for?
+
+    # Answer: ! specifies that the byte order is network = {big-endian}.
+    # H = unsigned short.
     return struct.pack("!H", OPCODE_RRQ) + filename + '\0' + mode + '\0'
 
 def make_packet_wrq(filename, mode):
+    # Write onto foreign file system
+
     return "" # TODO
 
 def make_packet_data(blocknr, data):
@@ -47,6 +52,7 @@ def make_packet_ack(blocknr):
     return "" # TODO
 
 def make_packet_err(errcode, errmsg):
+    
     return "" # TODO
 
 def parse_packet(msg):
